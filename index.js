@@ -1,5 +1,4 @@
 require("dotenv").config();
-const cheerio = require('cheerio');
 const { default: puppeteer } = require('puppeteer');
 const { LocalStorage } = require("node-localstorage");
 const { sendToGPT } = require("./gpt");

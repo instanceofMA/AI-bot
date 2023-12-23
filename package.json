@@ -1,7 +1,7 @@
 {
   "name": "ondemand-bot",
   "version": "0.0.1",
-  "description": "This bot automates handling support queries via SAP.",
+  "description": "This bot automates handling support queries via Directly OnDemand platform.",
   "main": "index.js",
   "scripts": {
     "start": "node index",
@@ -16,9 +16,7 @@
   "author": "Muhammad Abdullah",
   "license": "ISC",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.3.1",
-    "local-storage": "^2.0.0",
     "node-localstorage": "^3.0.5",
     "puppeteer": "^21.6.1"
   }
