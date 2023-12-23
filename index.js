@@ -9,9 +9,11 @@ const baseUrl = "https://app.directly.com";
 const loginPath = `/login/auth`;
 const dashboardPath = "/dashboard/index";
 
+const TIMEOUT = 60000;
+
 (async () => {
     // Launch the browser and open a new blank page
-    const browser = await puppeteer.launch({ headless: false, timeout: -1 });
+    const browser = await puppeteer.launch({ headless: false, timeout: TIMEOUT, protocolTimeout: TIMEOUT });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 720 });
 
@@ -20,19 +22,22 @@ const dashboardPath = "/dashboard/index";
     if(cookie) await page.setCookie(...cookie);
 
     // Go to dashboard page.
-    await page.goto(`${baseUrl}${dashboardPath}`);
+    await page.goto(`${baseUrl}${dashboardPath}`, { timeout: TIMEOUT });
     // If redirected to login page, then proceed to logging in.
     if(page.url() === `${baseUrl}${loginPath}`) await login(page);
 
     // NOT TESTED FROM HERE BELOW.
-    // Check for new task in "tasks for you"
-    await page.waitForSelector("div .task .is-current").then(div => div.click()); // But where is the link to question?
-
-    // Get question category and text.
-    const qCategory = await page.waitForSelector("span .label-item .tag").then(_ => page.$eval("span .label-item .tag", span => span.innerText()));
-    const qText = await page.waitForSelector("p .question-text").then(_ => page.$eval("p .question-text", p => p.innerText()));
-
-    sendToGPT(qCategory, qText);
+    // Refresh after every "TIMEOUT" to check for new questions.
+    while(1) {
+        try {
+        // Check for new task in "tasks for you"
+        await page.waitForSelector("div .task .is-current", { timeout: TIMEOUT }).then(div => {
+            handleQuestion(div, page);
+        });
+        } catch (error) {
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: TIMEOUT });
+        }
+    }
 
 //   await page.type('.search-box__input', 'automate beyond recorder');
 
@@ -64,4 +69,17 @@ async function login(page) {
 
     const cookies = await page.cookies();
     localStorage.setItem(baseUrl, JSON.stringify(cookies));
+}
+
+async function handleQuestion(questionElement, page) {
+    console.log(div);
+    await div.click(); // But where is the link to question?
+
+    // Get question category and text.
+    const qCategory = await page.waitForSelector("span .label-item .tag").then(_ => page.$eval("span .label-item .tag", span => span.innerText()));
+    const qText = await page.waitForSelector("p .question-text").then(_ => page.$eval("p .question-text", p => p.innerText()));
+
+    console.log(qCategory, qText);
+
+    await sendToGPT(qCategory, qText);
 }
