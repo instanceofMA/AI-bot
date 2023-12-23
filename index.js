@@ -13,7 +13,7 @@ const dashboardPath = "/dashboard/index";
     // Launch the browser and open a new blank page
     const browser = await puppeteer.launch({ headless: false, timeout: -1 });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1200, height: 720});
+    await page.setViewport({ width: 1200, height: 720 });
 
     // Attach cookies from local storage
     const cookie = JSON.parse(localStorage.getItem(baseUrl));
